@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample R&D - Production Management System (Online)</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Firebase SDKs for Online Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --base-font-size: 14px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        html {
+            font-size: var(--base-font-size);
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            color: #fff;
+            padding: 15px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border: 1px solid rgba(0, 242, 254, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 242, 254, 0.2);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            letter-spacing: 1.5px;
+            color: #4facfe;
+            text-transform: uppercase;
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .font-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            padding: 2px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .font-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #00f2fe;
+        }
+
+        .highlight-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 15px;
+            border-radius: 14px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .summary-card h3 {
+            font-size: 1rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .summary-card .count {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .shift-a-card {
+            border-left: 5px solid #00f2fe;
+        }
+
+        .shift-a-card .count {
+            color: #00f2fe;
+        }
+
+        .shift-b-card {
+            border-left: 5px solid #ff007f;
+        }
+
+        .shift-b-card .count {
+            color: #ff007f;
+        }
+
+        .large-btn-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn-large {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f857a6, #ff5858);
+        }
+
+        .btn-purple {
+            background: linear-gradient(45deg, #8E2DE2, #4A00E0);
+        }
+
+        .btn-orange {
+            background: linear-gradient(45deg, #FF8008, #FFC837);
+            color: #000;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #00f2fe;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .form-group select option {
+            background: #203a43;
+            color: #fff;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 380px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.08);
+            color: #00f2fe;
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(5px);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            width: 92%;
+            max-width: 950px;
+            max-height: 88vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #ff416c;
+        }
+
+        .buyer-btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .buyer-nav-btn {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .buyer-nav-btn:hover,
+        .buyer-nav-btn.active {
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 80px auto;
+            text-align: center;
+        }
+
+        .auth-container input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            outline: none;
+        }
+
+        .export-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Section -->
+    <header class="glass-card">
+        <h1><i class="fa-solid fa-vial"></i> Sample R&D</h1>
+
+        <div class="font-controls">
+            <span style="font-size: 0.8rem; margin-right: 5px;">Text:</span>
+            <button class="font-btn" onclick="changeFontSize(-1)">A-</button>
+            <button class="font-btn" onclick="resetFontSize()">A</button>
+            <button class="font-btn" onclick="changeFontSize(1)">A+</button>
+        </div>
+
+        <div id="user-info" class="hidden">
+            <span id="display-username" style="margin-right:10px; color:#00f2fe; font-weight:600;"></span>
+            <button class="btn btn-danger" onclick="logout()" style="padding: 6px 12px; font-size: 0.85rem;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- Login Section -->
+    <div id="auth-section" class="glass-card auth-container">
+        <h2>User Login</h2>
+        <input type="text" id="auth-username" placeholder="Username (Default: admin)">
+        <input type="password" id="auth-password" placeholder="Password (Default: 1234)">
+        <button class="btn" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Login</button>
+        <p id="login-error" style="color: #ff416c; margin-top: 10px; font-size: 0.85rem;"></p>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="hidden">
+
+        <!-- Daily Highlights -->
+        <div class="highlight-container">
+            <div class="summary-card shift-a-card">
+                <h3>Today's Shift A Complete</h3>
+                <div class="count" id="shift-a-count">0</div>
+            </div>
+            <div class="summary-card shift-b-card">
+                <h3>Today's Shift B Complete</h3>
+                <div class="count" id="shift-b-count">0</div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="large-btn-stack">
+            <button class="btn btn-orange btn-large" onclick="openModal('complete-work-modal')">
+                <i class="fa-solid fa-circle-check"></i> Complete Work Entry
+            </button>
+            <button class="btn btn-success btn-large" onclick="openModal('delivery-modal')">
+                <i class="fa-solid fa-truck-fast"></i> Delivery Items Box
+            </button>
+            <button class="btn btn-warning btn-large" onclick="openModal('buyer-modal')">
+                <i class="fa-solid fa-users"></i> Buyer Wise List
+            </button>
+            <button class="btn btn-purple btn-large" onclick="openModal('dyeing-modal')">
+                <i class="fa-solid fa-fill-drip"></i> Dyeing Process Items
+            </button>
+        </div>
+
+        <!-- Excel Export -->
+        <div class="glass-card">
+            <h2 class="section-title"><i class="fa-solid fa-file-excel"></i> Download Excel Report</h2>
+            <div class="export-box">
+                <div class="form-group" style="margin:0;">
+                    <label>From Date</label>
+                    <input type="date" id="export-from-date">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>To Date</label>
+                    <input type="date" id="export-to-date">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Data Category</label>
+                    <select id="export-type">
+                        <option value="all">All Received Data</option>
+                        <option value="delivered">Delivery Data</option>
+                        <option value="completed">Complete Work Data</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" style="margin-top: 18px;" onclick="exportToExcel()">
+                    <i class="fa-solid fa-download"></i> Download Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Received Entry Form -->
+        <div class="glass-card">
+            <h2 class="section-title"><i class="fa-solid fa-box-archive"></i> Received Data Entry</h2>
+            <form id="entry-form" onsubmit="saveReceivedData(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="input-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Buyer</label>
+                        <select id="input-buyer" required>
+                            <option value="">Select Buyer</option>
+                            <option value="Bonprix">Bonprix</option>
+                            <option value="Otto">Otto</option>
+                            <option value="Adler HSE">Adler HSE</option>
+                            <option value="M5">M5</option>
+                            <option value="Sub Contract">Sub Contract</option>
+                            <option value="Witt">Witt</option>
+                            <option value="Heine">Heine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Style</label>
+                        <input type="text" id="input-style" placeholder="Style" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="text" id="input-color" placeholder="Color" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fabric</label>
+                        <input type="text" id="input-fabric" placeholder="Fabric" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Item 1 (Type)</label>
+                        <select id="input-item1" required>
+                            <option value="">Select Item 1</option>
+                            <option value="Long Pant">Long Pant</option>
+                            <option value="Short Pant">Short Pant</option>
+                            <option value="Jacket">Jacket</option>
+                            <option value="Skirt">Skirt</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Item 2 (Wash/Process)</label>
+                        <select id="input-item2" required>
+                            <option value="">Select Item 2</option>
+                            <option value="Twill">Twill</option>
+                            <option value="Denim">Denim</option>
+                            <option value="Dyeing">Dyeing</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="input-quantity" placeholder="0" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn" style="margin-top: 15px;"><i class="fa-solid fa-plus"></i> Submit
+                    Entry</button>
+            </form>
+        </div>
+
+        <!-- Received Items Box -->
+        <div class="glass-card">
+            <h2 class="section-title"><i class="fa-solid fa-list-check"></i> Received Items Box</h2>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="global-search" placeholder="Search received entries..."
+                    onkeyup="filterTable('received-table-body', this.value)">
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Buyer</th>
+                            <th>Style</th>
+                            <th>Color</th>
+                            <th>Fabric</th>
+                            <th>Item 1</th>
+                            <th>Item 2</th>
+                            <th>Qty</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="received-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: Complete Work Entry & List -->
+    <div id="complete-work-modal" class="modal hidden">
+        <div class="glass-card modal-content">
+            <span class="close-btn" onclick="closeModal('complete-work-modal')">&times;</span>
+            <h2 class="section-title" style="color: #FF8008;"><i class="fa-solid fa-tasks"></i> Complete Work Entry</h2>
+
+            <form id="complete-work-form" onsubmit="saveCompleteWork(event)" style="margin-bottom: 20px;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="cw-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Buyer</label>
+                        <select id="cw-buyer" required>
+                            <option value="">Select Buyer</option>
+                            <option value="Bonprix">Bonprix</option>
+                            <option value="Otto">Otto</option>
+                            <option value="Adler HSE">Adler HSE</option>
+                            <option value="M5">M5</option>
+                            <option value="Sub Contract">Sub Contract</option>
+                            <option value="Witt">Witt</option>
+                            <option value="Heine">Heine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Style</label>
+                        <input type="text" id="cw-style" placeholder="Style" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="text" id="cw-color" placeholder="Color" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Item</label>
+                        <input type="text" id="cw-item" placeholder="Item Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Shift</label>
+                        <select id="cw-shift" required>
+                            <option value="">Select Shift</option>
+                            <option value="Shift A">Shift A</option>
+                            <option value="Shift B">Shift B</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-orange" style="margin-top: 15px;"><i class="fa-solid fa-check"></i>
+                    Submit Complete Work</button>
+            </form>
+
+            <h3 style="color:#00f2fe; margin-bottom: 10px;">Completed Work List</h3>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search complete work..."
+                    onkeyup="filterTable('cw-table-body', this.value)">
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Buyer</th>
+                            <th>Style</th>
+                            <th>Color</th>
+                            <th>Item</th>
+                            <th>Shift</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cw-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Delivery Modal -->
+    <div id="delivery-modal" class="modal hidden">
+        <div class="glass-card modal-content">
+            <span class="close-btn" onclick="closeModal('delivery-modal')">&times;</span>
+            <h2 class="section-title" style="color: #38ef7d;"><i class="fa-solid fa-truck-fast"></i> Delivery Items Box
+            </h2>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search delivered items..."
+                    onkeyup="filterTable('delivery-table-body', this.value)">
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Buyer</th>
+                            <th>Style</th>
+                            <th>Color</th>
+                            <th>Fabric</th>
+                            <th>Item 1</th>
+                            <th>Item 2</th>
+                            <th>Qty</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="delivery-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Buyer List Modal -->
+    <div id="buyer-modal" class="modal hidden">
+        <div class="glass-card modal-content">
+            <span class="close-btn" onclick="closeModal('buyer-modal')">&times;</span>
+            <h2 class="section-title"><i class="fa-solid fa-users"></i> Select Buyer</h2>
+
+            <div class="buyer-btn-grid" id="buyer-buttons-container"></div>
+
+            <div id="active-buyer-view" class="hidden">
+                <h3 id="active-buyer-title" style="color: #00f2fe; margin-bottom: 10px;"></h3>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search in this buyer..."
+                        onkeyup="filterTable('buyer-table-body', this.value)">
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Style</th>
+                                <th>Color</th>
+                                <th>Item 1</th>
+                                <th>Item 2</th>
+                                <th>Qty</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="buyer-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Dyeing Process Modal -->
+    <div id="dyeing-modal" class="modal hidden">
+        <div class="glass-card modal-content">
+            <span class="close-btn" onclick="closeModal('dyeing-modal')">&times;</span>
+            <h2 class="section-title" style="color: #8E2DE2;"><i class="fa-solid fa-fill-drip"></i> Dyeing Items List
+            </h2>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search dyeing items..."
+                    onkeyup="filterTable('dyeing-table-body', this.value)">
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Buyer</th>
+                            <th>Style</th>
+                            <th>Color</th>
+                            <th>Item 1</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dyeing-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // FIREBASE ONLINE DATABASE CONFIGURATION
+        // ==========================================
+        const firebaseConfig = {
+            databaseURL: "https://sample-rd-production-default-rtdb.firebaseio.com/"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let receivedEntries = [];
+        let completeWorkEntries = [];
+
+        let currentSelectedBuyer = null;
+        let currentFontSize = 14;
+        const buyersList = ['Bonprix', 'Otto', 'Adler HSE', 'M5', 'Sub Contract', 'Witt', 'Heine'];
+
+        // --- Font Size Adjustment ---
+        function changeFontSize(step) {
+            currentFontSize += step * 2;
+            if (currentFontSize < 10) currentFontSize = 10;
+            if (currentFontSize > 22) currentFontSize = 22;
+            document.documentElement.style.setProperty('--base-font-size', currentFontSize + 'px');
+        }
+
+        function resetFontSize() {
+            currentFontSize = 14;
+            document.documentElement.style.setProperty('--base-font-size', '14px');
+        }
+
+        // --- Auth Check ---
+        function handleLogin() {
+            const user = document.getElementById('auth-username').value;
+            const pass = document.getElementById('auth-password').value;
+
+            if (user === "admin" && pass === "1234") {
+                localStorage.setItem('rd_user_session', user);
+                showDashboard(user);
+            } else {
+                document.getElementById('login-error').innerText = "Invalid Username or Password!";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('rd_user_session');
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('user-info').classList.add('hidden');
+        }
+
+        function checkSession() {
+            const sessionUser = localStorage.getItem('rd_user_session');
+            if (sessionUser) {
+                showDashboard(sessionUser);
+            }
+        }
+
+        function showDashboard(user) {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('display-username').innerText = `User: ${user}`;
+
+            document.getElementById('input-date').valueAsDate = new Date();
+            document.getElementById('cw-date').valueAsDate = new Date();
+
+            renderBuyerNavButtons();
+            listenToOnlineDatabase();
+        }
+
+        // --- Modal Control ---
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // ==========================================
+        // REALTIME DATABASE SYNC (Multi-Device)
+        // ==========================================
+        function listenToOnlineDatabase() {
+            // Listen to received entries from Online DB
+            db.ref('receivedEntries').on('value', snapshot => {
+                const data = snapshot.val();
+                receivedEntries = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+                renderAllData();
+            });
+
+            // Listen to completed work entries from Online DB
+            db.ref('completeWorkEntries').on('value', snapshot => {
+                const data = snapshot.val();
+                completeWorkEntries = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+                renderAllData();
+            });
+        }
+
+        // --- Add Data To Online DB ---
+        function saveReceivedData(e) {
+            e.preventDefault();
+            const newItem = {
+                date: document.getElementById('input-date').value,
+                buyer: document.getElementById('input-buyer').value,
+                style: document.getElementById('input-style').value,
+                color: document.getElementById('input-color').value,
+                fabric: document.getElementById('input-fabric').value,
+                item1: document.getElementById('input-item1').value,
+                item2: document.getElementById('input-item2').value,
+                quantity: parseInt(document.getElementById('input-quantity').value) || 0,
+                status: 'received'
+            };
+
+            db.ref('receivedEntries').push(newItem);
+            document.getElementById('entry-form').reset();
+            document.getElementById('input-date').valueAsDate = new Date();
+        }
+
+        function saveCompleteWork(e) {
+            e.preventDefault();
+            const newCW = {
+                date: document.getElementById('cw-date').value,
+                buyer: document.getElementById('cw-buyer').value,
+                style: document.getElementById('cw-style').value,
+                color: document.getElementById('cw-color').value,
+                item: document.getElementById('cw-item').value,
+                shift: document.getElementById('cw-shift').value
+            };
+
+            db.ref('completeWorkEntries').push(newCW);
+            document.getElementById('complete-work-form').reset();
+            document.getElementById('cw-date').valueAsDate = new Date();
+        }
+
+        function markAsComplete(id) {
+            db.ref('receivedEntries/' + id).update({ status: 'delivered' });
+        }
+
+        function deleteReceivedEntry(id) {
+            if (confirm("Are you sure you want to delete this entry?")) {
+                db.ref('receivedEntries/' + id).remove();
+            }
+        }
+
+        function deleteCompleteWork(id) {
+            if (confirm("Are you sure you want to delete this completed work entry?")) {
+                db.ref('completeWorkEntries/' + id).remove();
+            }
+        }
+
+        // --- Render UI ---
+        function renderAllData() {
+            renderReceivedTable();
+            renderDeliveryTable();
+            renderDyeingTable();
+            renderCompleteWorkTable();
+            updateDailyShiftHighlights();
+            if (currentSelectedBuyer) selectBuyer(currentSelectedBuyer);
+        }
+
+        function renderReceivedTable() {
+            const tbody = document.getElementById('received-table-body');
+            tbody.innerHTML = '';
+
+            const items = receivedEntries.filter(i => i.status === 'received');
+            items.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><b style="color: #00f2fe;">${item.buyer}</b></td>
+                        <td>${item.style}</td>
+                        <td>${item.color}</td>
+                        <td>${item.fabric}</td>
+                        <td>${item.item1}</td>
+                        <td>${item.item2}</td>
+                        <td>${item.quantity}</td>
+                        <td>
+                            <button class="btn btn-success" onclick="markAsComplete('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-check"></i> Complete</button>
+                            <button class="btn btn-danger" onclick="deleteReceivedEntry('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderDeliveryTable() {
+            const tbody = document.getElementById('delivery-table-body');
+            tbody.innerHTML = '';
+
+            const items = receivedEntries.filter(i => i.status === 'delivered');
+            items.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><b style="color: #38ef7d;">${item.buyer}</b></td>
+                        <td>${item.style}</td>
+                        <td>${item.color}</td>
+                        <td>${item.fabric}</td>
+                        <td>${item.item1}</td>
+                        <td>${item.item2}</td>
+                        <td>${item.quantity}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteReceivedEntry('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderDyeingTable() {
+            const tbody = document.getElementById('dyeing-table-body');
+            tbody.innerHTML = '';
+
+            const items = receivedEntries.filter(i => i.item2 === 'Dyeing');
+            items.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><b style="color: #00f2fe;">${item.buyer}</b></td>
+                        <td>${item.style}</td>
+                        <td>${item.color}</td>
+                        <td>${item.item1}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.status === 'delivered' ? '<span style="color:#38ef7d">Delivered</span>' : '<span style="color:#ff5858">Received</span>'}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteReceivedEntry('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCompleteWorkTable() {
+            const tbody = document.getElementById('cw-table-body');
+            tbody.innerHTML = '';
+
+            completeWorkEntries.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><b style="color: #00f2fe;">${item.buyer}</b></td>
+                        <td>${item.style}</td>
+                        <td>${item.color}</td>
+                        <td>${item.item}</td>
+                        <td><b style="color: ${item.shift === 'Shift A' ? '#00f2fe' : '#ff007f'}">${item.shift}</b></td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteCompleteWork('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateDailyShiftHighlights() {
+            const today = new Date().toISOString().split('T')[0];
+
+            const todayShiftA = completeWorkEntries.filter(i => i.date === today && i.shift === 'Shift A').length;
+            const todayShiftB = completeWorkEntries.filter(i => i.date === today && i.shift === 'Shift B').length;
+
+            document.getElementById('shift-a-count').innerText = todayShiftA;
+            document.getElementById('shift-b-count').innerText = todayShiftB;
+        }
+
+        function filterTable(tableBodyId, query) {
+            const rows = document.querySelectorAll(`#${tableBodyId} tr`);
+            rows.forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        function renderBuyerNavButtons() {
+            const container = document.getElementById('buyer-buttons-container');
+            container.innerHTML = '';
+            buyersList.forEach(buyer => {
+                container.innerHTML += `<button class="buyer-nav-btn" onclick="selectBuyer('${buyer}')">${buyer}</button>`;
+            });
+        }
+
+        function selectBuyer(buyer) {
+            currentSelectedBuyer = buyer;
+            document.getElementById('active-buyer-view').classList.remove('hidden');
+            document.getElementById('active-buyer-title').innerText = `Buyer: ${buyer}`;
+
+            document.querySelectorAll('.buyer-nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText === buyer);
+            });
+
+            const tbody = document.getElementById('buyer-table-body');
+            tbody.innerHTML = '';
+
+            const buyerItems = receivedEntries.filter(i => i.buyer === buyer && i.status === 'received');
+
+            buyerItems.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td>${item.style}</td>
+                        <td>${item.color}</td>
+                        <td>${item.item1}</td>
+                        <td>${item.item2}</td>
+                        <td>${item.quantity}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteReceivedEntry('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function exportToExcel() {
+            const fromDate = document.getElementById('export-from-date').value;
+            const toDate = document.getElementById('export-to-date').value;
+            const exportType = document.getElementById('export-type').value;
+
+            let exportList = [];
+
+            if (exportType === 'completed') {
+                exportList = [...completeWorkEntries];
+                if (fromDate) exportList = exportList.filter(i => i.date >= fromDate);
+                if (toDate) exportList = exportList.filter(i => i.date <= toDate);
+
+                if (exportList.length === 0) return alert("No Completed Work data found!");
+
+                exportList = exportList.map(i => ({
+                    Date: i.date,
+                    Buyer: i.buyer,
+                    Style: i.style,
+                    Color: i.color,
+                    Item: i.item,
+                    Shift: i.shift
+                }));
+            } else {
+                exportList = [...receivedEntries];
+                if (fromDate) exportList = exportList.filter(i => i.date >= fromDate);
+                if (toDate) exportList = exportList.filter(i => i.date <= toDate);
+                if (exportType === 'delivered') exportList = exportList.filter(i => i.status === 'delivered');
+
+                if (exportList.length === 0) return alert("No Received/Delivery data found!");
+
+                exportList = exportList.map(i => ({
+                    Date: i.date,
+                    Buyer: i.buyer,
+                    Style: i.style,
+                    Color: i.color,
+                    Fabric: i.fabric,
+                    Item1: i.item1,
+                    Item2: i.item2,
+                    Quantity: i.quantity,
+                    Status: i.status.toUpperCase()
+                }));
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(exportList);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
+            XLSX.writeFile(workbook, `Production_Report_${exportType}_${fromDate || 'All'}_to_${toDate || 'All'}.xlsx`);
+        }
+
+        checkSession();
+    </script>
+</body>
+
+</html>
