@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sample R&D - Production Management System (Online)</title>
+    <title>Sample R&D - Production Management System</title>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -12,7 +12,7 @@
     <!-- SheetJS for Excel Download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- Firebase SDKs for Online Database -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -48,12 +48,6 @@
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: all 0.3s ease;
-        }
-
-        .glass-card:hover {
-            border: 1px solid rgba(0, 242, 254, 0.5);
-            box-shadow: 0 8px 32px 0 rgba(0, 242, 254, 0.2);
         }
 
         header {
@@ -72,29 +66,16 @@
             text-transform: uppercase;
         }
 
-        .font-controls {
-            display: flex;
+        .sync-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 5px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 5px 10px;
+            gap: 6px;
+            background: rgba(56, 239, 125, 0.2);
+            color: #38ef7d;
+            border: 1px solid #38ef7d;
+            padding: 4px 10px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .font-btn {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-weight: bold;
-            padding: 2px 8px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .font-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: #00f2fe;
+            font-size: 0.8rem;
         }
 
         .highlight-container {
@@ -180,16 +161,9 @@
             background: linear-gradient(45deg, #ff416c, #ff4b2b);
         }
 
-        .btn-danger:hover {
-            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
-        }
-
         .btn-success {
             background: linear-gradient(45deg, #11998e, #38ef7d);
-        }
-
-        .btn-success:hover {
-            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+            color: #000;
         }
 
         .btn-warning {
@@ -373,19 +347,35 @@
             outline: none;
         }
 
-        .export-box {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px;
-            border-radius: 10px;
+        .badge-delivered {
+            background: rgba(56, 239, 125, 0.2);
+            color: #38ef7d;
+            border: 1px solid #38ef7d;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .badge-received {
+            background: rgba(0, 242, 254, 0.2);
+            color: #00f2fe;
+            border: 1px solid #00f2fe;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
         }
 
         .hidden {
             display: none !important;
+        }
+
+        .action-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -395,26 +385,18 @@
     <!-- Header Section -->
     <header class="glass-card">
         <h1><i class="fa-solid fa-vial"></i> Sample R&D</h1>
-
-        <div class="font-controls">
-            <span style="font-size: 0.8rem; margin-right: 5px;">Text:</span>
-            <button class="font-btn" onclick="changeFontSize(-1)">A-</button>
-            <button class="font-btn" onclick="resetFontSize()">A</button>
-            <button class="font-btn" onclick="changeFontSize(1)">A+</button>
-        </div>
-
+        <div class="sync-badge"><i class="fa-solid fa-signal"></i> Live Online Sync</div>
         <div id="user-info" class="hidden">
             <span id="display-username" style="margin-right:10px; color:#00f2fe; font-weight:600;"></span>
-            <button class="btn btn-danger" onclick="logout()" style="padding: 6px 12px; font-size: 0.85rem;">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
+            <button class="btn btn-danger" onclick="logout()" style="padding: 6px 12px; font-size: 0.85rem;"><i
+                    class="fa-solid fa-right-from-bracket"></i> Logout</button>
         </div>
     </header>
 
     <!-- Login Section -->
     <div id="auth-section" class="glass-card auth-container">
         <h2>User Login</h2>
-        <input type="text" id="auth-username" placeholder="Username (Default: admin)">
+        <input type="text" id="auth-username" placeholder="Username (Ex: User 1)">
         <input type="password" id="auth-password" placeholder="Password (Default: 1234)">
         <button class="btn" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Login</button>
         <p id="login-error" style="color: #ff416c; margin-top: 10px; font-size: 0.85rem;"></p>
@@ -422,8 +404,7 @@
 
     <!-- Main Dashboard -->
     <div id="dashboard" class="hidden">
-
-        <!-- Daily Highlights -->
+        <!-- Highlights -->
         <div class="highlight-container">
             <div class="summary-card shift-a-card">
                 <h3>Today's Shift A Complete</h3>
@@ -435,46 +416,16 @@
             </div>
         </div>
 
-        <!-- Navigation Buttons -->
+        <!-- Modals Trigger Buttons -->
         <div class="large-btn-stack">
-            <button class="btn btn-orange btn-large" onclick="openModal('complete-work-modal')">
-                <i class="fa-solid fa-circle-check"></i> Complete Work Entry
-            </button>
-            <button class="btn btn-success btn-large" onclick="openModal('delivery-modal')">
-                <i class="fa-solid fa-truck-fast"></i> Delivery Items Box
-            </button>
-            <button class="btn btn-warning btn-large" onclick="openModal('buyer-modal')">
-                <i class="fa-solid fa-users"></i> Buyer Wise List
-            </button>
-            <button class="btn btn-purple btn-large" onclick="openModal('dyeing-modal')">
-                <i class="fa-solid fa-fill-drip"></i> Dyeing Process Items
-            </button>
-        </div>
-
-        <!-- Excel Export -->
-        <div class="glass-card">
-            <h2 class="section-title"><i class="fa-solid fa-file-excel"></i> Download Excel Report</h2>
-            <div class="export-box">
-                <div class="form-group" style="margin:0;">
-                    <label>From Date</label>
-                    <input type="date" id="export-from-date">
-                </div>
-                <div class="form-group" style="margin:0;">
-                    <label>To Date</label>
-                    <input type="date" id="export-to-date">
-                </div>
-                <div class="form-group" style="margin:0;">
-                    <label>Data Category</label>
-                    <select id="export-type">
-                        <option value="all">All Received Data</option>
-                        <option value="delivered">Delivery Data</option>
-                        <option value="completed">Complete Work Data</option>
-                    </select>
-                </div>
-                <button class="btn btn-success" style="margin-top: 18px;" onclick="exportToExcel()">
-                    <i class="fa-solid fa-download"></i> Download Excel
-                </button>
-            </div>
+            <button class="btn btn-orange btn-large" onclick="openModal('complete-work-modal')"><i
+                    class="fa-solid fa-circle-check"></i> Complete Work Entry</button>
+            <button class="btn btn-success btn-large" onclick="openModal('delivery-modal')"><i
+                    class="fa-solid fa-truck-fast"></i> Delivery Items Box</button>
+            <button class="btn btn-warning btn-large" onclick="openModal('buyer-modal')"><i
+                    class="fa-solid fa-users"></i> Buyer Wise List</button>
+            <button class="btn btn-purple btn-large" onclick="openModal('dyeing-modal')"><i
+                    class="fa-solid fa-fill-drip"></i> Dyeing Process Items</button>
         </div>
 
         <!-- Received Entry Form -->
@@ -482,10 +433,7 @@
             <h2 class="section-title"><i class="fa-solid fa-box-archive"></i> Received Data Entry</h2>
             <form id="entry-form" onsubmit="saveReceivedData(event)">
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" id="input-date" required>
-                    </div>
+                    <div class="form-group"><label>Date</label><input type="date" id="input-date" required></div>
                     <div class="form-group">
                         <label>Buyer</label>
                         <select id="input-buyer" required>
@@ -499,18 +447,12 @@
                             <option value="Heine">Heine</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Style</label>
-                        <input type="text" id="input-style" placeholder="Style" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Color</label>
-                        <input type="text" id="input-color" placeholder="Color" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Fabric</label>
-                        <input type="text" id="input-fabric" placeholder="Fabric" required>
-                    </div>
+                    <div class="form-group"><label>Style</label><input type="text" id="input-style" placeholder="Style"
+                            required></div>
+                    <div class="form-group"><label>Color</label><input type="text" id="input-color" placeholder="Color"
+                            required></div>
+                    <div class="form-group"><label>Fabric</label><input type="text" id="input-fabric"
+                            placeholder="Fabric" required></div>
                     <div class="form-group">
                         <label>Item 1 (Type)</label>
                         <select id="input-item1" required>
@@ -530,22 +472,25 @@
                             <option value="Dyeing">Dyeing</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Quantity</label>
-                        <input type="number" id="input-quantity" placeholder="0" required>
-                    </div>
+                    <div class="form-group"><label>Quantity</label><input type="number" id="input-quantity"
+                            placeholder="0" required></div>
                 </div>
                 <button type="submit" class="btn" style="margin-top: 15px;"><i class="fa-solid fa-plus"></i> Submit
                     Entry</button>
             </form>
         </div>
 
-        <!-- Received Items Box -->
+        <!-- Received Box -->
         <div class="glass-card">
-            <h2 class="section-title"><i class="fa-solid fa-list-check"></i> Received Items Box</h2>
-            <div class="search-box">
+            <div class="action-header-flex">
+                <h2 class="section-title" style="margin-bottom:0; border-bottom:none;"><i
+                        class="fa-solid fa-list-check"></i> Pending Received Items Box</h2>
+                <button class="btn btn-warning" onclick="downloadPendingReport()"><i class="fa-solid fa-file-excel"></i>
+                    Download Pending Items Excel</button>
+            </div>
+            <div class="search-box" style="margin-top: 10px;">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="global-search" placeholder="Search received entries..."
+                <input type="text" placeholder="Search received entries..."
                     onkeyup="filterTable('received-table-body', this.value)">
             </div>
             <div class="table-responsive">
@@ -567,21 +512,22 @@
                 </table>
             </div>
         </div>
-
     </div>
 
-    <!-- MODAL 1: Complete Work Entry & List -->
+    <!-- Complete Work Modal -->
     <div id="complete-work-modal" class="modal hidden">
         <div class="glass-card modal-content">
             <span class="close-btn" onclick="closeModal('complete-work-modal')">&times;</span>
-            <h2 class="section-title" style="color: #FF8008;"><i class="fa-solid fa-tasks"></i> Complete Work Entry</h2>
-
-            <form id="complete-work-form" onsubmit="saveCompleteWork(event)" style="margin-bottom: 20px;">
+            <div class="action-header-flex">
+                <h2 class="section-title" style="color: #FF8008; margin-bottom: 0; border-bottom: none;"><i
+                        class="fa-solid fa-tasks"></i> Complete Work Entry</h2>
+                <button class="btn btn-orange" onclick="downloadShiftWorkExcel()"><i class="fa-solid fa-file-excel"></i>
+                    Download Shift Work Report</button>
+            </div>
+            <form id="complete-work-form" onsubmit="saveCompleteWork(event)"
+                style="margin-bottom: 20px; margin-top: 15px;">
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" id="cw-date" required>
-                    </div>
+                    <div class="form-group"><label>Date</label><input type="date" id="cw-date" required></div>
                     <div class="form-group">
                         <label>Buyer</label>
                         <select id="cw-buyer" required>
@@ -595,18 +541,12 @@
                             <option value="Heine">Heine</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Style</label>
-                        <input type="text" id="cw-style" placeholder="Style" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Color</label>
-                        <input type="text" id="cw-color" placeholder="Color" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Item</label>
-                        <input type="text" id="cw-item" placeholder="Item Name" required>
-                    </div>
+                    <div class="form-group"><label>Style</label><input type="text" id="cw-style" placeholder="Style"
+                            required></div>
+                    <div class="form-group"><label>Color</label><input type="text" id="cw-color" placeholder="Color"
+                            required></div>
+                    <div class="form-group"><label>Item</label><input type="text" id="cw-item" placeholder="Item Name"
+                            required></div>
                     <div class="form-group">
                         <label>Shift</label>
                         <select id="cw-shift" required>
@@ -620,12 +560,12 @@
                     Submit Complete Work</button>
             </form>
 
-            <h3 style="color:#00f2fe; margin-bottom: 10px;">Completed Work List</h3>
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search complete work..."
+                <input type="text" placeholder="Search complete work entries..."
                     onkeyup="filterTable('cw-table-body', this.value)">
             </div>
+
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -645,16 +585,21 @@
         </div>
     </div>
 
-    <!-- MODAL 2: Delivery Modal -->
+    <!-- Delivery Modal -->
     <div id="delivery-modal" class="modal hidden">
         <div class="glass-card modal-content">
             <span class="close-btn" onclick="closeModal('delivery-modal')">&times;</span>
-            <h2 class="section-title" style="color: #38ef7d;"><i class="fa-solid fa-truck-fast"></i> Delivery Items Box
-            </h2>
+            <div class="action-header-flex">
+                <h2 class="section-title" style="color: #38ef7d; margin-bottom:0; border-bottom:none;"><i
+                        class="fa-solid fa-truck-fast"></i> Delivery Items Box</h2>
+                <button class="btn btn-success" onclick="downloadTotalDeliveryExcel()"><i
+                        class="fa-solid fa-file-excel"></i> Download Total Delivery Report</button>
+            </div>
 
-            <div class="search-box">
+            <!-- Delivery Search Box -->
+            <div class="search-box" style="margin-top:15px;">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search delivered items..."
+                <input type="text" placeholder="Search delivery items..."
                     onkeyup="filterTable('delivery-table-body', this.value)">
             </div>
 
@@ -679,21 +624,28 @@
         </div>
     </div>
 
-    <!-- MODAL 3: Buyer List Modal -->
+    <!-- Buyer Modal -->
     <div id="buyer-modal" class="modal hidden">
         <div class="glass-card modal-content">
             <span class="close-btn" onclick="closeModal('buyer-modal')">&times;</span>
             <h2 class="section-title"><i class="fa-solid fa-users"></i> Select Buyer</h2>
-
             <div class="buyer-btn-grid" id="buyer-buttons-container"></div>
 
             <div id="active-buyer-view" class="hidden">
-                <h3 id="active-buyer-title" style="color: #00f2fe; margin-bottom: 10px;"></h3>
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                    <h3 id="active-buyer-title" style="color: #00f2fe; margin: 0;"></h3>
+                    <button class="btn btn-success" onclick="downloadBuyerExcel()"><i
+                            class="fa-solid fa-file-excel"></i> Download Buyer Excel Report</button>
+                </div>
+
+                <!-- Buyer Search Box -->
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" placeholder="Search in this buyer..."
                         onkeyup="filterTable('buyer-table-body', this.value)">
                 </div>
+
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -701,9 +653,11 @@
                                 <th>Date</th>
                                 <th>Style</th>
                                 <th>Color</th>
+                                <th>Fabric</th>
                                 <th>Item 1</th>
                                 <th>Item 2</th>
                                 <th>Qty</th>
+                                <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -714,13 +668,14 @@
         </div>
     </div>
 
-    <!-- MODAL 4: Dyeing Process Modal -->
+    <!-- Dyeing Modal -->
     <div id="dyeing-modal" class="modal hidden">
         <div class="glass-card modal-content">
             <span class="close-btn" onclick="closeModal('dyeing-modal')">&times;</span>
             <h2 class="section-title" style="color: #8E2DE2;"><i class="fa-solid fa-fill-drip"></i> Dyeing Items List
             </h2>
 
+            <!-- Dyeing Search Box -->
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" placeholder="Search dyeing items..."
@@ -749,45 +704,37 @@
 
     <script>
         // ==========================================
-        // FIREBASE ONLINE DATABASE CONFIGURATION
+        // ⚠️ আপনার আসল FIREBASE তথ্যগুলো নিচে বসান:
         // ==========================================
         const firebaseConfig = {
-            databaseURL: "https://sample-rd-production-default-rtdb.firebaseio.com/"
+            apiKey: "AIzaSyCvW1eM0TD2afTBDWWqmSHksQbm3Esjl2I",
+            authDomain: "tradingviews-77.firebaseapp.com",
+            projectId: "tradingviews-77",
+            storageBucket: "tradingviews-77.firebasestorage.app",
+            messagingSenderId: "277785483742",
+            appId: "1:277785483742:web:eea123b02bf1d2f987e54f",
+            measurementId: "G-BTR2FS9EY5"
         };
+
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let receivedEntries = [];
         let completeWorkEntries = [];
-
         let currentSelectedBuyer = null;
-        let currentFontSize = 14;
         const buyersList = ['Bonprix', 'Otto', 'Adler HSE', 'M5', 'Sub Contract', 'Witt', 'Heine'];
 
-        // --- Font Size Adjustment ---
-        function changeFontSize(step) {
-            currentFontSize += step * 2;
-            if (currentFontSize < 10) currentFontSize = 10;
-            if (currentFontSize > 22) currentFontSize = 22;
-            document.documentElement.style.setProperty('--base-font-size', currentFontSize + 'px');
-        }
-
-        function resetFontSize() {
-            currentFontSize = 14;
-            document.documentElement.style.setProperty('--base-font-size', '14px');
-        }
-
-        // --- Auth Check ---
+        // --- Auth Handle ---
         function handleLogin() {
             const user = document.getElementById('auth-username').value;
             const pass = document.getElementById('auth-password').value;
 
-            if (user === "admin" && pass === "1234") {
+            if (user.trim() !== "" && pass === "1234") {
                 localStorage.setItem('rd_user_session', user);
                 showDashboard(user);
             } else {
-                document.getElementById('login-error').innerText = "Invalid Username or Password!";
+                document.getElementById('login-error').innerText = "পাসওয়ার্ড ভুল! (Default Password: 1234)";
             }
         }
 
@@ -800,9 +747,7 @@
 
         function checkSession() {
             const sessionUser = localStorage.getItem('rd_user_session');
-            if (sessionUser) {
-                showDashboard(sessionUser);
-            }
+            if (sessionUser) showDashboard(sessionUser);
         }
 
         function showDashboard(user) {
@@ -810,7 +755,6 @@
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('user-info').classList.remove('hidden');
             document.getElementById('display-username').innerText = `User: ${user}`;
-
             document.getElementById('input-date').valueAsDate = new Date();
             document.getElementById('cw-date').valueAsDate = new Date();
 
@@ -818,22 +762,21 @@
             listenToOnlineDatabase();
         }
 
-        // --- Modal Control ---
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
         // ==========================================
-        // REALTIME DATABASE SYNC (Multi-Device)
+        // REALTIME DATABASE LISTENERS
         // ==========================================
         function listenToOnlineDatabase() {
-            // Listen to received entries from Online DB
             db.ref('receivedEntries').on('value', snapshot => {
                 const data = snapshot.val();
                 receivedEntries = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
                 renderAllData();
+            }, error => {
+                alert("Database Error: " + error.message);
             });
 
-            // Listen to completed work entries from Online DB
             db.ref('completeWorkEntries').on('value', snapshot => {
                 const data = snapshot.val();
                 completeWorkEntries = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
@@ -841,7 +784,7 @@
             });
         }
 
-        // --- Add Data To Online DB ---
+        // --- Data Push Operations ---
         function saveReceivedData(e) {
             e.preventDefault();
             const newItem = {
@@ -856,9 +799,13 @@
                 status: 'received'
             };
 
-            db.ref('receivedEntries').push(newItem);
-            document.getElementById('entry-form').reset();
-            document.getElementById('input-date').valueAsDate = new Date();
+            db.ref('receivedEntries').push(newItem)
+                .then(() => {
+                    alert("✅ তথ্য সফলভাবে অনলাইনে সেভ হয়েছে!");
+                    document.getElementById('entry-form').reset();
+                    document.getElementById('input-date').valueAsDate = new Date();
+                })
+                .catch(err => alert("❌ সেভ হয়নি! এরর: " + err.message));
         }
 
         function saveCompleteWork(e) {
@@ -872,9 +819,12 @@
                 shift: document.getElementById('cw-shift').value
             };
 
-            db.ref('completeWorkEntries').push(newCW);
-            document.getElementById('complete-work-form').reset();
-            document.getElementById('cw-date').valueAsDate = new Date();
+            db.ref('completeWorkEntries').push(newCW)
+                .then(() => {
+                    alert("✅ Complete Work সেভ হয়েছে!");
+                    document.getElementById('complete-work-form').reset();
+                    document.getElementById('cw-date').valueAsDate = new Date();
+                });
         }
 
         function markAsComplete(id) {
@@ -882,13 +832,13 @@
         }
 
         function deleteReceivedEntry(id) {
-            if (confirm("Are you sure you want to delete this entry?")) {
+            if (confirm("আপনি কি নিশ্চিত এটি মুছে ফেলতে চান?")) {
                 db.ref('receivedEntries/' + id).remove();
             }
         }
 
         function deleteCompleteWork(id) {
-            if (confirm("Are you sure you want to delete this completed work entry?")) {
+            if (confirm("আপনি কি নিশ্চিত এটি মুছে ফেলতে চান?")) {
                 db.ref('completeWorkEntries/' + id).remove();
             }
         }
@@ -906,7 +856,6 @@
         function renderReceivedTable() {
             const tbody = document.getElementById('received-table-body');
             tbody.innerHTML = '';
-
             const items = receivedEntries.filter(i => i.status === 'received');
             items.forEach(item => {
                 tbody.innerHTML += `
@@ -931,7 +880,6 @@
         function renderDeliveryTable() {
             const tbody = document.getElementById('delivery-table-body');
             tbody.innerHTML = '';
-
             const items = receivedEntries.filter(i => i.status === 'delivered');
             items.forEach(item => {
                 tbody.innerHTML += `
@@ -955,7 +903,6 @@
         function renderDyeingTable() {
             const tbody = document.getElementById('dyeing-table-body');
             tbody.innerHTML = '';
-
             const items = receivedEntries.filter(i => i.item2 === 'Dyeing');
             items.forEach(item => {
                 tbody.innerHTML += `
@@ -966,7 +913,7 @@
                         <td>${item.color}</td>
                         <td>${item.item1}</td>
                         <td>${item.quantity}</td>
-                        <td>${item.status === 'delivered' ? '<span style="color:#38ef7d">Delivered</span>' : '<span style="color:#ff5858">Received</span>'}</td>
+                        <td>${item.status === 'delivered' ? '<span class="badge-delivered">Delivered</span>' : '<span class="badge-received">Received</span>'}</td>
                         <td>
                             <button class="btn btn-danger" onclick="deleteReceivedEntry('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -978,7 +925,6 @@
         function renderCompleteWorkTable() {
             const tbody = document.getElementById('cw-table-body');
             tbody.innerHTML = '';
-
             completeWorkEntries.forEach(item => {
                 tbody.innerHTML += `
                     <tr>
@@ -998,7 +944,6 @@
 
         function updateDailyShiftHighlights() {
             const today = new Date().toISOString().split('T')[0];
-
             const todayShiftA = completeWorkEntries.filter(i => i.date === today && i.shift === 'Shift A').length;
             const todayShiftB = completeWorkEntries.filter(i => i.date === today && i.shift === 'Shift B').length;
 
@@ -1033,17 +978,28 @@
             const tbody = document.getElementById('buyer-table-body');
             tbody.innerHTML = '';
 
-            const buyerItems = receivedEntries.filter(i => i.buyer === buyer && i.status === 'received');
+            const buyerItems = receivedEntries.filter(i => i.buyer === buyer);
+
+            if (buyerItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#aaa;">No entries found for ${buyer}</td></tr>`;
+                return;
+            }
 
             buyerItems.forEach(item => {
+                const statusBadge = item.status === 'delivered'
+                    ? '<span class="badge-delivered">Delivered</span>'
+                    : '<span class="badge-received">Received</span>';
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.date}</td>
                         <td>${item.style}</td>
                         <td>${item.color}</td>
+                        <td>${item.fabric}</td>
                         <td>${item.item1}</td>
                         <td>${item.item2}</td>
                         <td>${item.quantity}</td>
+                        <td>${statusBadge}</td>
                         <td>
                             <button class="btn btn-danger" onclick="deleteReceivedEntry('${item.id}')" style="padding: 3px 8px; font-size: 0.8rem;"><i class="fa-solid fa-trash"></i> Delete</button>
                         </td>
@@ -1052,54 +1008,113 @@
             });
         }
 
-        function exportToExcel() {
-            const fromDate = document.getElementById('export-from-date').value;
-            const toDate = document.getElementById('export-to-date').value;
-            const exportType = document.getElementById('export-type').value;
+        // ==========================================
+        // EXCEL DOWNLOAD FUNCTIONS
+        // ==========================================
 
-            let exportList = [];
+        // 1. Download Selected Buyer Excel Report
+        function downloadBuyerExcel() {
+            if (!currentSelectedBuyer) return;
+            const buyerItems = receivedEntries.filter(i => i.buyer === currentSelectedBuyer);
 
-            if (exportType === 'completed') {
-                exportList = [...completeWorkEntries];
-                if (fromDate) exportList = exportList.filter(i => i.date >= fromDate);
-                if (toDate) exportList = exportList.filter(i => i.date <= toDate);
-
-                if (exportList.length === 0) return alert("No Completed Work data found!");
-
-                exportList = exportList.map(i => ({
-                    Date: i.date,
-                    Buyer: i.buyer,
-                    Style: i.style,
-                    Color: i.color,
-                    Item: i.item,
-                    Shift: i.shift
-                }));
-            } else {
-                exportList = [...receivedEntries];
-                if (fromDate) exportList = exportList.filter(i => i.date >= fromDate);
-                if (toDate) exportList = exportList.filter(i => i.date <= toDate);
-                if (exportType === 'delivered') exportList = exportList.filter(i => i.status === 'delivered');
-
-                if (exportList.length === 0) return alert("No Received/Delivery data found!");
-
-                exportList = exportList.map(i => ({
-                    Date: i.date,
-                    Buyer: i.buyer,
-                    Style: i.style,
-                    Color: i.color,
-                    Fabric: i.fabric,
-                    Item1: i.item1,
-                    Item2: i.item2,
-                    Quantity: i.quantity,
-                    Status: i.status.toUpperCase()
-                }));
+            if (buyerItems.length === 0) {
+                alert("এই বায়ারের কোনো ডাটা নেই!");
+                return;
             }
 
-            const worksheet = XLSX.utils.json_to_sheet(exportList);
+            const excelData = buyerItems.map((item, index) => ({
+                "SL": index + 1,
+                "Date": item.date,
+                "Buyer": item.buyer,
+                "Style": item.style,
+                "Color": item.color,
+                "Fabric": item.fabric,
+                "Item 1": item.item1,
+                "Item 2": item.item2,
+                "Quantity": item.quantity,
+                "Status": item.status === 'delivered' ? 'Delivered' : 'Received (Pending)'
+            }));
+
+            exportToExcel(excelData, `${currentSelectedBuyer}_Report`);
+        }
+
+        // 2. Download Total Delivery Excel Report
+        function downloadTotalDeliveryExcel() {
+            const deliveryItems = receivedEntries.filter(i => i.status === 'delivered');
+
+            if (deliveryItems.length === 0) {
+                alert("কোনো ডেলিভারি ডাটা পাওয়া যায়নি!");
+                return;
+            }
+
+            const excelData = deliveryItems.map((item, index) => ({
+                "SL": index + 1,
+                "Delivery Date": item.date,
+                "Buyer": item.buyer,
+                "Style": item.style,
+                "Color": item.color,
+                "Fabric": item.fabric,
+                "Item 1": item.item1,
+                "Item 2": item.item2,
+                "Quantity": item.quantity,
+                "Status": "Delivered"
+            }));
+
+            exportToExcel(excelData, "Total_Delivery_Report");
+        }
+
+        // 3. Download Pending / Not Completed Excel Report
+        function downloadPendingReport() {
+            const pendingItems = receivedEntries.filter(i => i.status === 'received');
+
+            if (pendingItems.length === 0) {
+                alert("কোনো পেন্ডিং ডাটা নেই!");
+                return;
+            }
+
+            const excelData = pendingItems.map((item, index) => ({
+                "SL": index + 1,
+                "Received Date": item.date,
+                "Buyer": item.buyer,
+                "Style": item.style,
+                "Color": item.color,
+                "Fabric": item.fabric,
+                "Item 1": item.item1,
+                "Item 2": item.item2,
+                "Quantity": item.quantity,
+                "Status": "Pending (Not Completed)"
+            }));
+
+            exportToExcel(excelData, "Pending_Received_Report");
+        }
+
+        // 4. Download Shift Work Excel Report (Shift A & Shift B Completed Work)
+        function downloadShiftWorkExcel() {
+            if (completeWorkEntries.length === 0) {
+                alert("কোনো শিফটের কমপ্লিট ওয়ার্ক ডাটা নেই!");
+                return;
+            }
+
+            const excelData = completeWorkEntries.map((item, index) => ({
+                "SL": index + 1,
+                "Date": item.date,
+                "Shift": item.shift,
+                "Buyer": item.buyer,
+                "Style": item.style,
+                "Color": item.color,
+                "Item Name": item.item
+            }));
+
+            exportToExcel(excelData, "Shift_Work_Completed_Report");
+        }
+
+        // Common Export Helper Function
+        function exportToExcel(data, filename) {
+            const worksheet = XLSX.utils.json_to_sheet(data);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-
-            XLSX.writeFile(workbook, `Production_Report_${exportType}_${fromDate || 'All'}_to_${toDate || 'All'}.xlsx`);
+            const fullFileName = `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fullFileName);
         }
 
         checkSession();
